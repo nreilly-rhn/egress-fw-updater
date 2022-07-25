@@ -4,7 +4,7 @@ metadata:
   name: egress-updater
   namespace: egress-test
 spec:
-  schedule: '*/1 * * * *'
+  schedule: '*/2 * * * *'
   concurrencyPolicy: Replace
   suspend: false
   jobTemplate:
