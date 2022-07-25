@@ -1,2 +1,0 @@
-www.aws.com
-mirror.openshift.com
