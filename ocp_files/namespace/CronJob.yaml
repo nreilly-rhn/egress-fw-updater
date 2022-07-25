@@ -61,5 +61,5 @@ spec:
                 name: egress-update-domains
                 defaultMode: 0644
           dnsPolicy: ClusterFirst
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 2
