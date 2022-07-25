@@ -93,50 +93,37 @@ o = {
 
 for f in domain_files:
     if f.endswith((".allow")):
-        with open(f) as fp:
-            for line in fp:
-                l = line.strip()
-                if ( l.startswith("#") or len(l.split()) == 0):
-                    continue
-                if( validate_ip_address(l)):
-                    cidr = ipaddress.ip_network(l).with_prefixlen
-                    allow['to']['cidrSelector'] = cidr
-                    o['spec']['egress'].append(copy.deepcopy(allow))
-                elif(validate_ip_network(l)):
-                    cidr = ipaddress.ip_network(l).with_prefixlen
-                    allow['to']['cidrSelector'] = cidr
-                    o['spec']['egress'].append(copy.deepcopy(allow))
-                else:
-                    dig = subprocess.run(["dig", "+short", l ], encoding='utf-8', stdout=subprocess.PIPE)
-                    ips = dig.stdout
-                    for ip in ips.splitlines():
-                        cidr = ipaddress.ip_network(ip).with_prefixlen
-                        allow['to']['cidrSelector'] = cidr
-                        o['spec']['egress'].append(copy.deepcopy(allow))
-        o['spec']['egress'].append(deny_all)
+        entry = allow
+        explicit = deny_all
     elif f.endswith((".deny")):
-        with open(f) as fp:
-            for line in fp:
-                l = line.strip()
-                if ( l.startswith("#") or len(l.split()) == 0):
-                    continue
-                if( validate_ip_address(l)):
-                    cidr = ipaddress.ip_network(l).with_prefixlen
-                    deny['to']['cidrSelector'] = cidr
-                    o['spec']['egress'].append(copy.deepcopy(deny))
-                elif(validate_ip_network(l)):
-                    cidr = ipaddress.ip_network(l).with_prefixlen
-                    deny['to']['cidrSelector'] = cidr
-                    o['spec']['egress'].append(copy.deepcopy(deny))
-                else:
-                    dig = subprocess.run(["dig", "+short", l ], encoding='utf-8', stdout=subprocess.PIPE)
-                    ips = dig.stdout
-                    for ip in ips.splitlines():
-                        cidr = ipaddress.ip_network(ip).with_prefixlen
-                        deny['to']['cidrSelector'] = cidr
-                        o['spec']['egress'].append(copy.deepcopy(deny))
-        o['spec']['egress'].append(allow_all)
+        entry = deny
+        explicit = allow_all
+    else:
+        continue
 
+    with open(f) as fp:
+        for line in fp:
+            l = line.strip()
+            if ( l.startswith("#") or len(l.split()) == 0):
+                continue
+
+            if( validate_ip_address(l)):
+                cidr = ipaddress.ip_network(l).with_prefixlen
+                entry['to']['cidrSelector'] = cidr
+                o['spec']['egress'].append(copy.deepcopy(entry))
+            elif(validate_ip_network(l)):
+                cidr = ipaddress.ip_network(l).with_prefixlen
+                entry['to']['cidrSelector'] = cidr
+                o['spec']['egress'].append(copy.deepcopy(entry))
+            else:
+                dig = subprocess.run(["dig", "+short", l ], encoding='utf-8', stdout=subprocess.PIPE)
+                ips = dig.stdout
+                for ip in ips.splitlines():
+                    cidr = ipaddress.ip_network(ip).with_prefixlen
+                    entry['to']['cidrSelector'] = cidr
+                    o['spec']['egress'].append(copy.deepcopy(entry))
+
+o['spec']['egress'].append(explicit)
 if args.write:
     out = open(args.write, 'w')
 else:
