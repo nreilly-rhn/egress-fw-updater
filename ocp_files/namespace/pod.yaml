@@ -1,0 +1,66 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: cli
+  namespace: egress-test
+  labels:
+    app: cli
+spec:
+  restartPolicy: Always
+  serviceAccount: egress-updater
+  serviceAccountName: egress-updater
+  terminationGracePeriodSeconds: 30
+  preemptionPolicy: PreemptLowerPriority
+  containers:
+    - resources: 
+      env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: DIR
+          value: '/tmp/files'
+        - name: WRITE
+          value: egress_fw.json
+        - name: GLOB
+          value: '*.allow'
+      requests:
+        cpu: 10m
+        memory: 80Mi
+      terminationMessagePath: /dev/termination-log
+      name: cli
+      command:
+        - /bin/sh
+        - '-ec'
+        - 'while :; do echo ''.''; sleep 5 ; done'
+      volumeMounts:
+        - name: workdir
+          mountPath: /tmp/scratch
+        - name: egress-update-script
+          mountPath: /tmp/
+        - name: egress-update-domains
+          mountPath: /tmp/domains.txt
+      terminationMessagePolicy: File
+      image: openshift4/ose-cli
+  volumes:
+    - name: workdir
+      emptydir: {}
+    - name: egress-update-script
+      configMap:
+        name: egress-update-script
+        defaultMode: 0755
+    - name: egress-update-domains
+      configMap:
+        name: egress-update-domains
+        defaultMode: 0644
+  dnsPolicy: ClusterFirst
+  tolerations:
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
