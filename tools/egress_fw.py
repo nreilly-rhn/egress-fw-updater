@@ -123,7 +123,7 @@ for f in domain_files:
                     entry['to']['cidrSelector'] = cidr
                     o['spec']['egress'].append(copy.deepcopy(entry))
 
-o['spec']['egress'].append(explicit)
+    o['spec']['egress'].append(explicit)
 if args.write:
     out = open(args.write, 'w')
 else:
