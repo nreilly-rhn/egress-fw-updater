@@ -59,9 +59,9 @@ domain_files = glob.glob(os.path.join(args.dir, args.glob))
 sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["networkType"]
 
 apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)["subsets"]["addresses"]
-
+ips = apiservers.stdout
 print (sdn)
-print (json.dumps(apiservers, indent=2))
+print (json.dumps(ips, indent=2))
 
 #for apiserver in apiservers["addresses"]:
 #    for key, value in apiserver.items():
