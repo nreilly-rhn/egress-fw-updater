@@ -3,15 +3,28 @@ kind: ClusterRole
 metadata:
   name: egress-updater
 rules:
-- apiGroups:
-  - network.openshift.io
-  resources:
-  - egressnetworkpolicies
-  verbs:
-  - '*'
-- apiGroups:
-  - k8s.ovn.org
-  resources:
-  - EgressFirewall
-  verbs:
-  - '*'
+  - verbs:
+      - '*'
+    apiGroups:
+      - network.openshift.io
+    resources:
+      - egressnetworkpolicies
+  - verbs:
+      - '*'
+    apiGroups:
+      - k8s.ovn.org
+    resources:
+      - EgressFirewall
+  - verbs:
+      - '*'
+    apiGroups:
+      - config.openshift.io
+    resources:
+      - networks
+  - verbs:
+      - '*'
+    apiGroups:
+      - ''
+    resources:
+      - endpoints
+'
