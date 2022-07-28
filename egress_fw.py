@@ -61,7 +61,7 @@ sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "c
 apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)["subsets"]["addresses"]
 
 print (sdn)
-print (json.dumps(apiservers, indent=2)
+print (json.dumps(apiservers, indent=2))
 
 #for apiserver in apiservers["addresses"]:
 #    for key, value in apiserver.items():
