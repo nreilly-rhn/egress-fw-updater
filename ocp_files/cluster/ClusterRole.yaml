@@ -9,3 +9,9 @@ rules:
   - egressnetworkpolicies
   verbs:
   - '*'
+- apiGroups:
+  - k8s.ovn.org
+  resources:
+  - EgressFirewall
+  verbs:
+  - '*'

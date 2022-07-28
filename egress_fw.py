@@ -52,8 +52,60 @@ if not args.namespace:
 if not args.dir:
     args.dir = os.getcwd()
 
+DefaultAllowHosts = []
+
 domain_files = glob.glob(os.path.join(args.dir, args.glob))
 
+sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["networkType"]
+
+apiservers = json.loads(subprocess.run([ "oc", "get", "ep" "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)["subsets"]
+
+for apiserver in apiservers["addresses"]:
+    for key, value in apiserver.items():
+      DefaultAllowHosts.append(value)
+
+print(DefaultAllowHosts)
+
+if sdn.lower() == "openshiftsdn":
+    apiVersion = "network.openshift.io/v1"
+    kind = "EgressNetworkPolicy"
+#    o = {
+#        "apiVersion": "network.openshift.io/v1",
+#        "kind": "EgressNetworkPolicy",
+#        "metadata": {
+#            "name": "default",
+#            "namespace": args.namespace
+#        },
+#        "spec": {
+#            "egress": []
+#        }
+#    }
+elif sdn.lower() == "ovnkubernetes":
+    apiVersion = "k8s.ovn.org/v11"
+    kind = "EgressFirewall"
+#    o = {
+#        "apiVersion": "k8s.ovn.org/v1",
+#        "kind": "EgressFirewall",
+#        "metadata": {
+#            "name": "default",
+#            "namespace": args.namespace
+#        },
+#        "spec": {
+#            "egress": []
+#        }
+#    }
+
+o = {
+    "apiVersion": "network.openshift.io/v1",
+    "kind": "EgressNetworkPolicy",
+    "metadata": {
+        "name": "default",
+        "namespace": args.namespace
+    },
+    "spec": {
+        "egress": []
+    }
+}
 allow = {
     "to": {
         "cidrSelector": ''
@@ -72,6 +124,12 @@ allow_all = {
     },
     "type": "Allow"
 }
+allow_api = {
+    "to": {
+        "cidrSelector": '172.18.0.0/24'
+    },
+    "type": "Allow"
+}
 deny_all = {
     "to": {
         "cidrSelector": '0.0.0.0/0'
@@ -79,25 +137,13 @@ deny_all = {
     "type": "Deny"
 }
 
-o = {
-    "apiVersion": "network.openshift.io/v1",
-    "kind": "EgressNetworkPolicy",
-    "metadata": {
-        "name": "default",
-        "namespace": args.namespace
-    },
-    "spec": {
-        "egress": []
-    }
-}
-
 for f in domain_files:
     if f.endswith((".allow")):
         entry = allow
-        explicit = deny_all
+        implicit = deny_all
     elif f.endswith((".deny")):
         entry = deny
-        explicit = allow_all
+        implicit = allow_all
     else:
         continue
 
@@ -106,7 +152,6 @@ for f in domain_files:
             l = line.strip()
             if ( l.startswith("#") or len(l.split()) == 0):
                 continue
-
             if( validate_ip_address(l)):
                 cidr = ipaddress.ip_network(l).with_prefixlen
                 entry['to']['cidrSelector'] = cidr
@@ -122,8 +167,11 @@ for f in domain_files:
                     cidr = ipaddress.ip_network(ip).with_prefixlen
                     entry['to']['cidrSelector'] = cidr
                     o['spec']['egress'].append(copy.deepcopy(entry))
+    if f.endswith((".allow")):
+        for DefaultAllowHost in DefaultAllowHosts:
+            o['spec']['egress'].append(DefaultAllowHost)
+    o['spec']['egress'].append(implicit) 
 
-    o['spec']['egress'].append(explicit)
 if args.write:
     out = open(args.write, 'w')
 else:
@@ -134,3 +182,4 @@ if args.output == 'yaml':
     print(yaml.dump(o), file=out)
 else:
     print(json.dumps(o), file=out)
+    print(json.dumps(o, indent=2) )

@@ -1,0 +1,46 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: egress-updater-test
+  namespace: egress-test
+spec:
+  restartPolicy: Never
+  serviceAccountName: egress-updater
+  containers:
+    - resources: {}
+      terminationMessagePath: /dev/termination-log
+      name: egress-updater
+      command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
+      env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: DIR
+          value: /tmp/scratch/domains
+        - name: WRITE
+          value: /tmp/scratch/egress_fw.json
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: workdir
+          mountPath: /tmp/scratch
+        - name: egress-update-script
+          mountPath: /tmp/scratch/egress_fw
+        - name: egress-update-domains
+          mountPath: /tmp/scratch/domains
+      image: openshift4/ose-cli
+  serviceAccount: egress-updater
+  volumes:
+    - name: workdir
+      emptyDir: {}
+    - name: egress-update-script
+      configMap:
+        name: egress-update-script-update
+        defaultMode: 493
+    - name: egress-update-domains
+      configMap:
+        name: egress-update-domains
+        defaultMode: 420
+
+  dnsPolicy: ClusterFirst
