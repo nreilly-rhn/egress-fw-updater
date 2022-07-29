@@ -39,7 +39,7 @@ spec:
       emptyDir: {}
     - name: egress-update-script
       configMap:
-        name: egress-update-script-update
+        name: egress-update-script
         defaultMode: 493
     - name: egress-update-domains
       configMap:
