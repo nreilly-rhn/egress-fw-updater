@@ -58,7 +58,7 @@ DefaultAllowHosts = []
 domain_files = glob.glob(os.path.join(args.dir, args.glob))
 
 sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["networkType"]
-servicenetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["serviceNetwork"]
+servicenetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["serviceNetwork"][0]
 apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)["subsets"][0]
 
 for apiserver in apiservers["addresses"]:
@@ -127,7 +127,7 @@ for f in domain_files:
             if ( l.startswith("#") or len(l.split()) == 0):
                 continue
             if( validate_ip_address(l)):
-                cidr = ipaddress.ip_address(l).with_prefixlen
+                cidr = ipaddress.ip_network(l).with_prefixlen
                 entry['to']['cidrSelector'] = cidr
                 o['spec']['egress'].append(copy.deepcopy(entry))
             elif(validate_ip_network(l)):
