@@ -20,7 +20,7 @@ rules:
     apiGroups:
       - k8s.ovn.org
     resources:
-      - EgressFirewalls
+      - egressfirewalls
   - verbs:
       - '*'
     apiGroups:
