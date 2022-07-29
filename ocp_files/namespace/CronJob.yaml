@@ -26,9 +26,9 @@ spec:
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: DIR
-                  value: /tmp/scratch/domains
+                  value: /egress/domains
                 - name: WRITE
-                  value: /tmp/scratch/egress_fw.json
+                  value: /egress/egress_fw.json
               requests:
                 cpu: 10m
                 memory: 80Mi
@@ -37,15 +37,15 @@ spec:
               command:
                 - /bin/sh
                 - '-ec'
-                - '/tmp/scratch/egress_fw/egress_fw.py && oc apply -f /tmp/scratch/egress_fw.json'
+                - '${DIR}/scripts/egress_fw.py && oc apply -f ${DIR}/egress_fw.json'
               imagePullPolicy: IfNotPresent
               volumeMounts:
                 - name: workdir
-                  mountPath: /tmp/scratch
+                  mountPath: /egress
                 - name: egress-update-script
-                  mountPath: /tmp/scratch/egress_fw
+                  mountPath: /egress/scripts
                 - name: egress-update-domains
-                  mountPath: /tmp/scratch/domains
+                  mountPath: /egress/domains
               terminationMessagePolicy: File
               image: openshift4/ose-cli
           serviceAccount: egress-updater
