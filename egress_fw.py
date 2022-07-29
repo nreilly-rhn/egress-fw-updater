@@ -72,7 +72,7 @@ if sdn.lower() == "openshiftsdn":
     apiVersion = "network.openshift.io/v1"
     kind = "EgressNetworkPolicy"
 elif sdn.lower() == "ovnkubernetes":
-    apiVersion = "k8s.ovn.org/v11"
+    apiVersion = "k8s.ovn.org/v1"
     kind = "EgressFirewall"
 
 o = {
