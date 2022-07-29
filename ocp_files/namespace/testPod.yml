@@ -15,7 +15,7 @@ spec:
               apiVersion: v1
               fieldPath: metadata.namespace
         - name: DIR
-          value: /egress
+          value: /egress/domains
         - name: WRITE
           value: /egress/egress_fw.json
       requests:
@@ -29,9 +29,9 @@ spec:
         - name: workdir
           mountPath: /egress
         - name: egress-update-script
-          mountPath: /egress
+          mountPath: /egress/scripts
         - name: egress-update-domains
-          mountPath: /egress
+          mountPath: /egress/domains
       image: openshift4/ose-cli
   serviceAccount: egress-updater
   volumes:
