@@ -7,10 +7,7 @@ spec:
   restartPolicy: Never
   serviceAccountName: egress-updater
   containers:
-    - resources: {}
-      terminationMessagePath: /dev/termination-log
-      name: egress-updater
-      command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
+    - resources: 
       env:
         - name: NAMESPACE
           valueFrom:
@@ -18,17 +15,19 @@ spec:
               apiVersion: v1
               fieldPath: metadata.namespace
         - name: DIR
-          value: /tmp/scratch/domains
+          value: /egress
         - name: WRITE
-          value: /tmp/scratch/egress_fw.json
+          value: /egress/egress_fw.json
+      requests:
+        cpu: 10m
+        memory: 80Mi
+      terminationMessagePath: /dev/termination-log
+      name: egress-updater
+      command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
       imagePullPolicy: IfNotPresent
       volumeMounts:
         - name: workdir
-          mountPath: /tmp/scratch
-        - name: egress-update-script
-          mountPath: /tmp/scratch/egress_fw
-        - name: egress-update-domains
-          mountPath: /tmp/scratch/domains
+          mountPath: /egress
       image: openshift4/ose-cli
   serviceAccount: egress-updater
   volumes:
@@ -42,5 +41,4 @@ spec:
       configMap:
         name: egress-update-domains
         defaultMode: 420
-
   dnsPolicy: ClusterFirst
