@@ -45,7 +45,7 @@ spec:
                 - name: egress-update-script
                   mountPath: /egress/scripts
                 - name: egress-update-domains
-                  mountPath: /egress/domains
+                  mountPath: /egress
               terminationMessagePolicy: File
               image: openshift4/ose-cli
           serviceAccount: egress-updater
