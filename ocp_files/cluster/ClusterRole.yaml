@@ -6,6 +6,12 @@ rules:
   - verbs:
       - '*'
     apiGroups:
+      - network.config.openshift.io
+    resources:
+      - networks
+  - verbs:
+      - '*'
+    apiGroups:
       - network.openshift.io
     resources:
       - egressnetworkpolicies
