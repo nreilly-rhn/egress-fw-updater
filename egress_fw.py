@@ -141,7 +141,7 @@ for f in domain_files:
                     cidr = ipaddress.ip_network(ip).with_prefixlen
                     entry['to']['cidrSelector'] = cidr
                     o['spec']['egress'].append(copy.deepcopy(entry))
-    if f.endswith((".allow") and sdn.lower() == "ovnkubernetes"):
+    if f.endswith((".allow")) and sdn.lower() == "ovnkubernetes":
         for DefaultAllowHost in DefaultAllowHosts:
             entry['to']['cidrSelector'] = DefaultAllowHost
             o['spec']['egress'].append(copy.deepcopy(entry))
