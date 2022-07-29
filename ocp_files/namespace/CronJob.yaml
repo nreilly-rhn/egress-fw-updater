@@ -26,7 +26,7 @@ spec:
                       apiVersion: v1
                       fieldPath: metadata.namespace
                 - name: DIR
-                  value: /egress/domains
+                  value: /egress/
                 - name: WRITE
                   value: /egress/egress_fw.json
               requests:
@@ -37,7 +37,7 @@ spec:
               command:
                 - /bin/sh
                 - '-ec'
-                - '${DIR}/scripts/egress_fw.py && oc apply -f ${DIR}/egress_fw.json'
+                - '${DIR}/scripts/egress_fw.py && oc apply -f ${WRITE}'
               imagePullPolicy: IfNotPresent
               volumeMounts:
                 - name: workdir
