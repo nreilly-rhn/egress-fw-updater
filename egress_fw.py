@@ -66,7 +66,7 @@ for apiserver in apiservers["addresses"]:
       DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
 DefaultAllowHosts.append(servicenetwork)
 
-print(DefaultAllowHosts)
+#print(DefaultAllowHosts)
 
 if sdn.lower() == "openshiftsdn":
     apiVersion = "network.openshift.io/v1"
