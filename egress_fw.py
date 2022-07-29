@@ -71,7 +71,7 @@ for apiserver in apiservers["addresses"]:
     for key, value in apiserver.items():
       DefaultAllowHosts.append(value)
 
-#print(DefaultAllowHosts)
+print(DefaultAllowHosts)
 #
 #if sdn.lower() == "openshiftsdn":
 #    apiVersion = "network.openshift.io/v1"
