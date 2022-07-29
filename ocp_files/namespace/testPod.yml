@@ -28,6 +28,10 @@ spec:
       volumeMounts:
         - name: workdir
           mountPath: /egress
+        - name: egress-update-script
+          mountPath: /tmp/scratch/egress_fw
+        - name: egress-update-domains
+          mountPath: /tmp/scratch/domains
       image: openshift4/ose-cli
   serviceAccount: egress-updater
   volumes:
