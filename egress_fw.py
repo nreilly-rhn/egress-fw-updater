@@ -53,7 +53,7 @@ if not args.namespace:
 if not args.dir:
     args.dir = os.getcwd()
 
-DefaultAllowHosts = []
+DefaultAllowHosts = [ '100.64.0.0/16' ]
 
 domain_files = glob.glob(os.path.join(args.dir, args.glob))
 
@@ -141,9 +141,10 @@ for f in domain_files:
                     cidr = ipaddress.ip_network(ip).with_prefixlen
                     entry['to']['cidrSelector'] = cidr
                     o['spec']['egress'].append(copy.deepcopy(entry))
-    if f.endswith((".allow")):
+    if f.endswith((".allow") and sdn.lower() == "ovnkubernetes"):
         for DefaultAllowHost in DefaultAllowHosts:
-            o['spec']['egress'].append(DefaultAllowHost)
+            entry['to']['cidrSelector'] = DefaultAllowHost
+            o['spec']['egress'].append(copy.deepcopy(entry))
     o['spec']['egress'].append(implicit) 
 
 if args.write:
