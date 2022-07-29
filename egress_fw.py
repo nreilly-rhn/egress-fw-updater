@@ -58,113 +58,102 @@ DefaultAllowHosts = []
 domain_files = glob.glob(os.path.join(args.dir, args.glob))
 
 sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["networkType"]
-#apiservers = []
+servicenetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["serviceNetwork"]
 apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)["subsets"][0]
-
-print(json.dumps(apiservers, indent=2))
-
-#ips = apiservers.stdout
-print (sdn)
-#print (json.dumps(ips, indent=2))
 
 for apiserver in apiservers["addresses"]:
     for key, value in apiserver.items():
-      DefaultAllowHosts.append(value)
+      DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
+DefaultAllowHosts.append(servicenetwork)
 
 print(DefaultAllowHosts)
-#
-#if sdn.lower() == "openshiftsdn":
-#    apiVersion = "network.openshift.io/v1"
-#    kind = "EgressNetworkPolicy"
-#elif sdn.lower() == "ovnkubernetes":
-#    apiVersion = "k8s.ovn.org/v11"
-#    kind = "EgressFirewall"
-#
-#o = {
-#    "apiVersion": apiVersion,
-#    "kind": kind,
-#    "metadata": {
-#        "name": "default",
-#        "namespace": args.namespace
-#    },
-#    "spec": {
-#        "egress": []
-#    }
-#}
-#allow = {
-#    "to": {
-#        "cidrSelector": ''
-#    },
-#    "type": "Allow"
-#}
-#deny = {
-#    "to": {
-#        "cidrSelector": ''
-#    },
-#    "type": "Deny"
-#}
-#allow_all = {
-#    "to": {
-#        "cidrSelector": '0.0.0.0/0'
-#    },
-#    "type": "Allow"
-#}
-#allow_api = {
-#    "to": {
-#        "cidrSelector": '172.18.0.0/24'
-#    },
-#    "type": "Allow"
-#}
-#deny_all = {
-#    "to": {
-#        "cidrSelector": '0.0.0.0/0'
-#    },
-#    "type": "Deny"
-#}
-#
-#for f in domain_files:
-#    if f.endswith((".allow")):
-#        entry = allow
-#        implicit = deny_all
-#    elif f.endswith((".deny")):
-#        entry = deny
-#        implicit = allow_all
-#    else:
-#        continue
-#
-#    with open(f) as fp:
-#        for line in fp:
-#            l = line.strip()
-#            if ( l.startswith("#") or len(l.split()) == 0):
-#                continue
-#            if( validate_ip_address(l)):
-#                cidr = ipaddress.ip_address(l).with_prefixlen
-#                entry['to']['cidrSelector'] = cidr
-#                o['spec']['egress'].append(copy.deepcopy(entry))
-#            elif(validate_ip_network(l)):
-#                cidr = ipaddress.ip_network(l).with_prefixlen
-#                entry['to']['cidrSelector'] = cidr
-#                o['spec']['egress'].append(copy.deepcopy(entry))
-#            else:
-#                dig = subprocess.run(["dig", "+short", l ], encoding='utf-8', stdout=subprocess.PIPE)
-#                ips = dig.stdout
-#                for ip in ips.splitlines():
-#                    cidr = ipaddress.ip_network(ip).with_prefixlen
-#                    entry['to']['cidrSelector'] = cidr
-#                    o['spec']['egress'].append(copy.deepcopy(entry))
-#    if f.endswith((".allow")):
-#        for DefaultAllowHost in DefaultAllowHosts:
-#            o['spec']['egress'].append(DefaultAllowHost)
-#    o['spec']['egress'].append(implicit) 
-#
-#if args.write:
-#    out = open(args.write, 'w')
-#else:
-#    out = sys.stdout
-#
-#if args.output == 'yaml':
-#    import yaml
-#    print(yaml.dump(o), file=out)
-#else:
-#    print(json.dumps(o), file=out)
-#    print(json.dumps(o, indent=2) )
+
+if sdn.lower() == "openshiftsdn":
+    apiVersion = "network.openshift.io/v1"
+    kind = "EgressNetworkPolicy"
+elif sdn.lower() == "ovnkubernetes":
+    apiVersion = "k8s.ovn.org/v11"
+    kind = "EgressFirewall"
+
+o = {
+    "apiVersion": apiVersion,
+    "kind": kind,
+    "metadata": {
+        "name": "default",
+        "namespace": args.namespace
+    },
+    "spec": {
+        "egress": []
+    }
+}
+allow = {
+    "to": {
+        "cidrSelector": ''
+    },
+    "type": "Allow"
+}
+deny = {
+    "to": {
+        "cidrSelector": ''
+    },
+    "type": "Deny"
+}
+allow_all = {
+    "to": {
+        "cidrSelector": '0.0.0.0/0'
+    },
+    "type": "Allow"
+}
+deny_all = {
+    "to": {
+        "cidrSelector": '0.0.0.0/0'
+    },
+    "type": "Deny"
+}
+
+for f in domain_files:
+    if f.endswith((".allow")):
+        entry = allow
+        implicit = deny_all
+    elif f.endswith((".deny")):
+        entry = deny
+        implicit = allow_all
+    else:
+        continue
+
+    with open(f) as fp:
+        for line in fp:
+            l = line.strip()
+            if ( l.startswith("#") or len(l.split()) == 0):
+                continue
+            if( validate_ip_address(l)):
+                cidr = ipaddress.ip_address(l).with_prefixlen
+                entry['to']['cidrSelector'] = cidr
+                o['spec']['egress'].append(copy.deepcopy(entry))
+            elif(validate_ip_network(l)):
+                cidr = ipaddress.ip_network(l).with_prefixlen
+                entry['to']['cidrSelector'] = cidr
+                o['spec']['egress'].append(copy.deepcopy(entry))
+            else:
+                dig = subprocess.run(["dig", "+short", l ], encoding='utf-8', stdout=subprocess.PIPE)
+                ips = dig.stdout
+                for ip in ips.splitlines():
+                    cidr = ipaddress.ip_network(ip).with_prefixlen
+                    entry['to']['cidrSelector'] = cidr
+                    o['spec']['egress'].append(copy.deepcopy(entry))
+    if f.endswith((".allow")):
+        for DefaultAllowHost in DefaultAllowHosts:
+            o['spec']['egress'].append(DefaultAllowHost)
+    o['spec']['egress'].append(implicit) 
+
+if args.write:
+    out = open(args.write, 'w')
+else:
+    out = sys.stdout
+
+if args.output == 'yaml':
+    import yaml
+    print(yaml.dump(o), file=out)
+else:
+    print(json.dumps(o), file=out)
+    print(json.dumps(o, indent=2) )
