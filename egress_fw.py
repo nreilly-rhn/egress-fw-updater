@@ -22,19 +22,15 @@ class CustomArgumentParser(argparse.ArgumentParser):
 def validate_ip_address(address):
     try:
         ip = ipaddress.ip_address(address)
-#        print("IP address {} is valid. The object returned is {}".format(address, ip))
         return True
     except ValueError:
-#        print("IP address {} is not valid".format(address))
         return False
 
 def validate_ip_network(address):
     try:
         ip = ipaddress.ip_network(address)
-#        print("IP address {} is valid. The object returned is {}".format(address, ip))
         return True
     except ValueError:
-#        print("IP address {} is not valid".format(address))
         return False
 
 
@@ -59,9 +55,9 @@ domain_files = glob.glob(os.path.join(args.dir, "config", args.glob))
 
 sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["networkType"]
 servicenetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["serviceNetwork"][0]
-apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)["subsets"][0]
+apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)
 
-for apiserver in apiservers["addresses"]:
+for apiserver in apiservers["addresses"]["subsets"][0]:
     for key, value in apiserver.items():
       DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
 DefaultAllowHosts.append(servicenetwork)
