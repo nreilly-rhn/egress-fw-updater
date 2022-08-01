@@ -53,22 +53,18 @@ DefaultAllowHosts = [ '100.64.0.0/16' ]
 
 domain_files = glob.glob(os.path.join(args.dir, "config", args.glob))
 
-sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)
-servicenetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)
-
+clusterNetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)
 apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)
 
 for apiserver in apiservers["subsets"][0]["addresses"]:
     for key, value in apiserver.items():
       DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
-DefaultAllowHosts.append(servicenetwork["spec"]["serviceNetwork"][0])
+DefaultAllowHosts.append(clusterNetwork["spec"]["serviceNetwork"][0])
 
-#print(DefaultAllowHosts)
-
-if sdn["spec"]["networkType"].lower() == "openshiftsdn":
+if clusterNetwork["spec"]["networkType"].lower() == "openshiftsdn":
     apiVersion = "network.openshift.io/v1"
     kind = "EgressNetworkPolicy"
-elif sdn["spec"]["networkType"].lower() == "ovnkubernetes":
+elif clusterNetwork["spec"]["networkType"].lower() == "ovnkubernetes":
     apiVersion = "k8s.ovn.org/v1"
     kind = "EgressFirewall"
 
@@ -138,7 +134,7 @@ for f in domain_files:
                     cidr = ipaddress.ip_network(ip).with_prefixlen
                     entry['to']['cidrSelector'] = cidr
                     o['spec']['egress'].append(copy.deepcopy(entry))
-    if f.endswith((".allow")) and sdn["spec"]["networkType"].lower() == "ovnkubernetes":
+    if f.endswith((".allow")) and clusterNetwork["spec"]["networkType"].lower() == "ovnkubernetes":
         for DefaultAllowHost in DefaultAllowHosts:
             entry['to']['cidrSelector'] = DefaultAllowHost
             o['spec']['egress'].append(copy.deepcopy(entry))
@@ -154,4 +150,4 @@ if args.output == 'yaml':
     print(yaml.dump(o), file=out)
 else:
     print(json.dumps(o), file=out)
-    print(json.dumps(o, indent=2) )
+    print(json.dumps(o) )
