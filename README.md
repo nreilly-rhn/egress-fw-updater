@@ -6,11 +6,11 @@ Creates and maintains egressfirewall objects for OpenShift4 clusters on Openshif
 
 #### ServiceAccount creation
 
-Several cluster resources need to be created, the pod need to run under a service account with additions RBAC permissions to create the egress firewall rules. Examples can be found under "ocp_files/{cluster,namespace}"
+Several cluster resources need to be created, the pod needs to run under a service account with additions RBAC permissions to create the egress firewall rules. Examples can be found under "ocp_files/{cluster,namespace}"
 
 #### Create Allow/Deny configmaps
 
-FQDN's, IP Addresses, network ranges on seperate lines in files named "*.allow" or "*.deny". There can be multiple files created. Examples can be found in directories "domains_allow" and "domains.deny"
+FQDN's, IP Addresses, network ranges on seperate lines in files named "\*.allow" or "\*.deny". There can be multiple files created. Examples can be found in directories "domains_allow" and "domains_._deny"
 
 #### Install example
 
