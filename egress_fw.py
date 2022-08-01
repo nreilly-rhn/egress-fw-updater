@@ -53,7 +53,7 @@ DefaultAllowHosts = [ '100.64.0.0/16' ]
 
 domain_files = glob.glob(os.path.join(args.dir, "config", args.glob))
 
-sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["networkType"]
+sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)
 servicenetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["serviceNetwork"][0]
 apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)
 
@@ -64,10 +64,10 @@ DefaultAllowHosts.append(servicenetwork)
 
 #print(DefaultAllowHosts)
 
-if sdn.lower() == "openshiftsdn":
+if sdn["spec"]["networkType"].lower() == "openshiftsdn":
     apiVersion = "network.openshift.io/v1"
     kind = "EgressNetworkPolicy"
-elif sdn.lower() == "ovnkubernetes":
+elif sdn["spec"]["networkType"].lower() == "ovnkubernetes":
     apiVersion = "k8s.ovn.org/v1"
     kind = "EgressFirewall"
 
@@ -137,7 +137,7 @@ for f in domain_files:
                     cidr = ipaddress.ip_network(ip).with_prefixlen
                     entry['to']['cidrSelector'] = cidr
                     o['spec']['egress'].append(copy.deepcopy(entry))
-    if f.endswith((".allow")) and sdn.lower() == "ovnkubernetes":
+    if f.endswith((".allow")) and sdn["spec"]["networkType"].lower() == "ovnkubernetes":
         for DefaultAllowHost in DefaultAllowHosts:
             entry['to']['cidrSelector'] = DefaultAllowHost
             o['spec']['egress'].append(copy.deepcopy(entry))
