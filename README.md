@@ -4,14 +4,15 @@ Creates and maintains egressfirewall objects for OpenShift4 clusters on Openshif
 
 ### ServiceAccount creation
 
-Several cluster resources need to be created, the pod needs to run under a service account with additions RBAC permissions to create the egress firewall rules. Examples can be found under "ocp_files/{cluster,namespace}"
+Several cluster resources need to be created, the pod needs to run under a service account with additions RBAC permissions to create the egress firewall rules. Examples can be found under [ocp_files/cluster](ocp_files/cluster/) and [ocp_files/namespace](ocp_files/namespace/)
 
 ### Create Allow/Deny configmaps
 
-FQDN's, IP Addresses, network ranges on seperate lines in files named "\*.allow" or "\*.deny". There can be multiple files created. Examples can be found in directories "domains_allow" and "domains_._deny"
+FQDN's, IP Addresses, network ranges on seperate lines in files named "\*.allow" or "\*.deny". There can be multiple files created. Examples can be found in directories [domains_allow](domains_allow/) and [domains.deny](domains_deny/)
 
 ### Script variables
 
+Arguments to *egress_fw.py* can be included on the commandline in the pod/cronjob spec, or as environment variables to to pod/cronjob. See [cronjob](ocp_files/namespace/CronJob.yaml) definition for example
 | Arg | Desc |
 |:---|:---|
 | --namespace | Namespace for EgressNetworkPolicy (OpenshiftSDN) or EgressFirewall (OVNKubernetes) object.       |
