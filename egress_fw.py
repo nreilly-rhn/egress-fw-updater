@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import argparse, copy, glob, json, os, ipaddress, subprocess, sys
+import argparse, copy, glob, json, re, os, ipaddress, subprocess, sys
 from operator import ne
 
 
@@ -59,7 +59,7 @@ apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", 
 for apiserver in apiservers["subsets"][0]["addresses"]:
     for key, value in apiserver.items():
       DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
-      
+
 DefaultAllowHosts.append(clusterNetwork["spec"]["serviceNetwork"][0])
 
 if clusterNetwork["spec"]["networkType"].lower() == "openshiftsdn":
@@ -132,6 +132,9 @@ for f in domain_files:
                 dig = subprocess.run(["dig", "+short", l ], encoding='utf-8', stdout=subprocess.PIPE)
                 ips = dig.stdout
                 for ip in ips.splitlines():
+                    if not ( validate_ip_address(ip)):
+                        print("ERR: " + ip + "is not a valid IP address")
+                        continue
                     cidr = ipaddress.ip_network(ip).with_prefixlen
                     entry['to']['cidrSelector'] = cidr
                     o['spec']['egress'].append(copy.deepcopy(entry))
