@@ -56,7 +56,7 @@ domain_files = glob.glob(os.path.join(args.dir, "config", args.glob))
 clusterNetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)
 apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)
 
-for apiserver in apiservers["addresses"]["subsets"][0]:
+for apiserver in json.dumps(apiservers["addresses"]["subsets"][0]):
     for key, value in apiserver.items():
       DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
 DefaultAllowHosts.append(clusterNetwork["spec"]["serviceNetwork"][0])
@@ -71,7 +71,7 @@ elif clusterNetwork["spec"]["networkType"].lower() == "ovnkubernetes":
     kind = "EgressFirewall"
 
 o = {
-    "apiVersion": apiVersion,
+    "apiVersion": apiVersion,  
     "kind": kind,
     "metadata": {
         "name": "default",
