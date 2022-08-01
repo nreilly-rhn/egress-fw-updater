@@ -12,11 +12,12 @@ FQDN's, IP Addresses, network ranges on seperate lines in files named "\*.allow"
 
 ### Script variables
 
+
 |  --namespace | Namespace for EgressNetworkPolicy (OpenshiftSDN) or EgressFirewall (OVNKubernetes) object. |
-|  --dir | - The directory to search for rule files. |
-|  --output | - Output format for EgressNetworkPolicy declaration, can be either YAML or JSON, defaults to JSON. |
-|  --write | - Write output to file |
-|  --glob | - Glob pattern for rule files, defaults to '*.allow'. |
+|  --dir       | - The directory to search for rule files. |
+|  --output    | - Output format for EgressNetworkPolicy declaration, can be either YAML or JSON, defaults to JSON. |
+|  --write     | - Write output to file |
+|  --glob      | - Glob pattern for rule files, defaults to '*.allow'. |
 
 ## Install example
 
