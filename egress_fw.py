@@ -55,9 +55,9 @@ domain_files = glob.glob(os.path.join(args.dir, "config", args.glob))
 
 sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["networkType"]
 servicenetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["serviceNetwork"][0]
-apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)["subsets"][0]
+apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)
 
-for apiserver in apiservers["addresses"]:
+for apiserver in apiservers["subsets"][0]["addresses"]:
     for key, value in apiserver.items():
       DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
 DefaultAllowHosts.append(servicenetwork)
