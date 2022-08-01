@@ -12,11 +12,11 @@ FQDN's, IP Addresses, network ranges on seperate lines in files named "\*.allow"
 
 ### Script variables
 
-- [ ] --namespace
-- [ ] --dir
-- [ ] --output
-- [ ] --write
-- [ ] --glob
+- --namespace
+- --dir
+- --output
+- --write
+- --glob
 
 
 ## Install example
