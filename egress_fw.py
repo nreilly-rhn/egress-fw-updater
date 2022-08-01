@@ -59,6 +59,7 @@ apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", 
 for apiserver in apiservers["subsets"][0]["addresses"]:
     for key, value in apiserver.items():
       DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
+      
 DefaultAllowHosts.append(clusterNetwork["spec"]["serviceNetwork"][0])
 
 if clusterNetwork["spec"]["networkType"].lower() == "openshiftsdn":
