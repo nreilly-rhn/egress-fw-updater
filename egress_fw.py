@@ -53,21 +53,20 @@ DefaultAllowHosts = [ '100.64.0.0/16' ]
 
 domain_files = glob.glob(os.path.join(args.dir, "config", args.glob))
 
-sdn = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["networkType"]
-servicenetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)["spec"]["serviceNetwork"][0]
+clusterNetwork = json.loads(subprocess.run([ "oc", "get", "Network.config.openshift.io", "cluster", "-ojson"], stdout=subprocess.PIPE).stdout)
 apiservers = json.loads(subprocess.run([ "oc", "get", "ep", "kubernetes", "-n", "default", "-ojson" ], stdout=subprocess.PIPE).stdout)
 
 for apiserver in apiservers["addresses"]["subsets"][0]:
     for key, value in apiserver.items():
       DefaultAllowHosts.append(ipaddress.ip_network(value).with_prefixlen)
-DefaultAllowHosts.append(servicenetwork)
+DefaultAllowHosts.append(clusterNetwork["spec"]["serviceNetwork"][0])
 
 #print(DefaultAllowHosts)
 
-if sdn.lower() == "openshiftsdn":
+if clusterNetwork["spec"]["networkType"].lower() == "openshiftsdn":
     apiVersion = "network.openshift.io/v1"
     kind = "EgressNetworkPolicy"
-elif sdn.lower() == "ovnkubernetes":
+elif clusterNetwork["spec"]["networkType"].lower() == "ovnkubernetes":
     apiVersion = "k8s.ovn.org/v1"
     kind = "EgressFirewall"
 
