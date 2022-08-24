@@ -118,7 +118,7 @@ for f in domain_files:
     with open(f) as fp:
         for line in fp:
             l = line.strip()
-            if ( l.startswith("#") or len(l.split()) == 0):
+            if ( l.startswith('#') or len(l.split()) == 0):
                 continue
             if( validate_ip_address(l)):
                 cidr = ipaddress.ip_network(l).with_prefixlen
@@ -129,20 +129,24 @@ for f in domain_files:
                 entry['to']['cidrSelector'] = cidr
                 o['spec']['egress'].append(copy.deepcopy(entry))
             else:
-                dig = subprocess.run(["dig", "+short", l ], encoding='utf-8', stdout=subprocess.PIPE)
-                ips = dig.stdout
+                dig_proc = subprocess.Popen(['dig', '+short', l], encoding='utf-8', stdout=subprocess.PIPE)
+                grep_proc = subprocess.Popen(['grep', '-v', '\.$'], encoding='utf-8', stdin=dig_proc.stdout, stdout=subprocess.PIPE)
+                dig_proc.stdout.close # allow dig_proc to receive SIGPIPE if grep_proc exists.
+                ips = grep_proc.communicate()[0] 
                 for ip in ips.splitlines():
                     if not ( validate_ip_address(ip)):
-                        print("ERR: " + ip + "is not a valid IP address")
+                        print('ERR: ' + ip + ' is not a valid IP address')
                         continue
                     cidr = ipaddress.ip_network(ip).with_prefixlen
                     entry['to']['cidrSelector'] = cidr
                     o['spec']['egress'].append(copy.deepcopy(entry))
-    if f.endswith((".allow")) and clusterNetwork["spec"]["networkType"].lower() == "ovnkubernetes":
-        for DefaultAllowHost in DefaultAllowHosts:
-            entry['to']['cidrSelector'] = DefaultAllowHost
-            o['spec']['egress'].append(copy.deepcopy(entry))
-    o['spec']['egress'].append(implicit) 
+
+if f.endswith(('.allow')) and clusterNetwork['spec']['networkType'].lower() == 'ovnkubernetes':
+    for DefaultAllowHost in DefaultAllowHosts:
+        entry['to']['cidrSelector'] = DefaultAllowHost
+        o['spec']['egress'].append(copy.deepcopy(entry))
+
+o['spec']['egress'].append(implicit) 
 
 if args.write:
     out = open(args.write, 'w')
